@@ -22,14 +22,11 @@ const Login: React.FC = () => {
 
       const { token } = response.data;
 
-      // Armazenar o token no localStorage
       localStorage.setItem("token", token);
 
-      // Redirecionar para a página principal ou dashboard
       navigate("/tasks");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        // Exibir mensagem de erro do backend
         setError(error.response?.data.message || "Erro ao fazer login.");
       } else {
         setError("Erro inesperado. Por favor, tente novamente.");

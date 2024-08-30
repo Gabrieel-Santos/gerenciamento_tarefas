@@ -6,8 +6,8 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-[#FFB800] text-black py-6">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center">
-          <div>
+        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <div className="text-center md:text-left">
             <p className="font-bold">Phone:</p>
             <p>+55 32 9 84580814</p>
             <p className="mt-2 font-bold">Email:</p>
@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
               &copy; Copyright Gerenciamento de Tarefas. All Rights Reserved
             </p>
           </div>
-          <div className="flex space-x-4">
+          <div className="flex justify-center space-x-4">
             <a
               href="https://www.linkedin.com/in/gabrielsatr"
               target="_blank"

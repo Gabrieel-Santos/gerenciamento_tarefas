@@ -63,8 +63,8 @@ const Profile: React.FC = () => {
       );
 
       setSuccess("Perfil atualizado com sucesso!");
-      setSenha(""); // Limpar campo de senha após a atualização
-      setConfirmarSenha(""); // Limpar campo de confirmar senha
+      setSenha("");
+      setConfirmarSenha("");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         setError(error.response?.data.message || "Erro ao atualizar perfil.");

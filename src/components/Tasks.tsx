@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
-import Modal from "react-modal"; // Importando o react-modal
+import { faTrash, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import Modal from "react-modal";
+import jsPDF from "jspdf";
 
 interface Task {
   id: number;
@@ -12,7 +13,6 @@ interface Task {
   concluido: boolean;
 }
 
-// Configuração do modal para o React
 Modal.setAppElement("#root");
 
 const Tasks: React.FC = () => {
@@ -77,7 +77,6 @@ const Tasks: React.FC = () => {
 
   const handleTaskClick = (e: React.MouseEvent, taskId: number) => {
     const target = e.target as HTMLElement;
-    // Verifica se o checkbox ou a lixeira foram clicados para evitar conflitos
     if (target.tagName !== "INPUT" && !target.closest(".delete-icon")) {
       navigate(`/tasks/${taskId}`);
     }
@@ -116,12 +115,89 @@ const Tasks: React.FC = () => {
     }
   };
 
+  const generatePDF = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Usuário não autenticado.");
+      return;
+    }
+
+    try {
+      // Buscar informações do usuário e das tarefas
+      const userResponse = await axios.get("http://localhost:5000/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const tasksResponse = await axios.get("http://localhost:5000/tasks", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const { nome } = userResponse.data;
+      const tasks = tasksResponse.data;
+
+      const doc = new jsPDF();
+
+      // Título do PDF com o nome do usuário
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor("#007bff");
+      doc.text(nome, 10, 20); // Posição: 10mm da esquerda, 20mm do topo
+
+      // Iniciar listagem das tarefas
+      doc.setFontSize(14);
+      doc.setFont("Helvetica", "normal");
+
+      let yPosition = 40; // Posição inicial da primeira tarefa
+
+      tasks.forEach((task: Task) => {
+        // Título da tarefa
+        doc.setTextColor("#283d50");
+        doc.text(task.titulo, 10, yPosition);
+        yPosition += 10;
+
+        // Status da tarefa
+        if (task.concluido) {
+          doc.setTextColor("green");
+          doc.text("Concluída", 10, yPosition);
+        } else {
+          doc.setTextColor("#f02849");
+          doc.text("Não Concluída", 10, yPosition);
+        }
+        yPosition += 10;
+
+        // Descrição da tarefa
+        doc.setTextColor("#525c69");
+        doc.text(doc.splitTextToSize(task.descricao, 180), 10, yPosition);
+        yPosition += 20; // Espaço adicional entre as tarefas
+
+        // Verifica se está perto do final da página
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 20; // Reinicia a posição y para a nova página
+        }
+      });
+
+      // Salvar o PDF
+      doc.save("Minhas_Tarefas.pdf");
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      alert("Erro ao gerar PDF. Tente novamente.");
+    }
+  };
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#ecf5ff]">
       <div className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
-        <h2 className="text-2xl font-bold text-center text-[#283d50] mb-6">
-          Minhas Tarefas
-        </h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-[#283d50]">Minhas Tarefas</h2>
+          <button
+            onClick={generatePDF}
+            className="text-[#283d50] hover:text-red-700 cursor-pointer"
+          >
+            <FontAwesomeIcon icon={faFilePdf} size="2x" />
+          </button>
+        </div>
 
         {error && (
           <p className="text-red-500 text-center mb-4 font-bold">{error}</p>
@@ -129,7 +205,7 @@ const Tasks: React.FC = () => {
 
         {tasks.length === 0 ? (
           <p className="text-center text-gray-500">
-            Você ainda não tem tarefas. Para começa clique{" "}
+            Você ainda não tem tarefas. Para começar clique{" "}
             <Link
               to="/add-task"
               className="text-gray-500 hover:text-[#007bff] transition-colors"
@@ -157,8 +233,6 @@ const Tasks: React.FC = () => {
                     style={{ accentColor: "green" }}
                   />
                   <div className="block max-w-[200px] text-[#283d50]">
-                    {" "}
-                    {/* Ajuste de largura máxima para evitar que o título e o ícone fiquem muito próximos */}
                     <h3 className="text-lg font-semibold truncate">
                       {task.titulo}
                     </h3>
@@ -173,7 +247,7 @@ const Tasks: React.FC = () => {
                     e.stopPropagation();
                     handleDeleteClick(task);
                   }}
-                  className="delete-icon text-[#283d50] hover:text-red-700 cursor-pointer ml-4" // Cor ajustada para a mesma cor do título
+                  className="delete-icon text-[#283d50] hover:text-red-700 cursor-pointer ml-4"
                   size="lg"
                 />
               </div>
@@ -182,7 +256,6 @@ const Tasks: React.FC = () => {
         )}
       </div>
 
-      {/* Modal de confirmação de exclusão usando React Modal */}
       <Modal
         isOpen={showModal}
         onRequestClose={() => setShowModal(false)}
