@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"; // Ícones do Font Awesome
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 const Registrar: React.FC = () => {
   const [nome, setNome] = useState("");
@@ -10,7 +10,7 @@ const Registrar: React.FC = () => {
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Novo estado para confirmar senha
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -30,7 +30,7 @@ const Registrar: React.FC = () => {
       });
 
       if (response.status === 201) {
-        navigate("/"); // Redireciona para a página de login após o registro
+        navigate("/");
       }
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {

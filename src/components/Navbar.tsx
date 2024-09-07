@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { logout } from "../services/auth";
 
 const Navbar: React.FC = () => {
@@ -20,9 +22,9 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex-shrink-0">
-            <a href="/tasks" className="flex items-center py-5">
+            <NavLink to="/tasks" className="flex items-center py-5">
               <img src="./logo.png" alt="Logo" className="h-8 w-auto" />
-            </a>
+            </NavLink>
           </div>
           <div className="hidden md:flex items-center space-x-6">
             <NavLink
@@ -62,8 +64,6 @@ const Navbar: React.FC = () => {
               Sair
             </button>
           </div>
-
-          {/* Botão do menu hambúrguer */}
           <div className="-mr-2 flex md:hidden">
             <button
               onClick={toggleMenu}
@@ -72,34 +72,12 @@ const Navbar: React.FC = () => {
               aria-controls="mobile-menu"
               aria-expanded={isOpen ? "true" : "false"}
             >
-              <svg
-                className={`${isOpen ? "hidden" : "block"} h-6 w-6`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16m-7 6h7"
-                ></path>
-              </svg>
-              <svg
-                className={`${isOpen ? "block" : "hidden"} h-6 w-6`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                ></path>
-              </svg>
+              {/* FontAwesome Icons for the hamburger menu and close */}
+              {isOpen ? (
+                <FontAwesomeIcon icon={faTimes} className="h-6 w-6" />
+              ) : (
+                <FontAwesomeIcon icon={faBars} className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>

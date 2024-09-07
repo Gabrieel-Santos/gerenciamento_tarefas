@@ -20,32 +20,38 @@ const Tasks: React.FC = () => {
   const [error, setError] = useState("");
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Usuário não autenticado.");
-          return;
-        }
-
-        const response = await axios.get("http://localhost:5000/tasks", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setTasks(response.data);
-      } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          setError(error.response?.data.message || "Erro ao listar tarefas.");
-        } else {
-          setError("Erro inesperado. Por favor, tente novamente.");
-        }
+  const fetchTasks = async (page: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Usuário não autenticado.");
+        return;
       }
-    };
 
-    fetchTasks();
-  }, []);
+      const response = await axios.get("http://localhost:5000/tasks", {
+        params: { page },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setTasks(response.data.tarefas);
+      setTotalPages(response.data.totalPages);
+      setCurrentPage(response.data.currentPage);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data.message || "Erro ao listar tarefas.");
+      } else {
+        setError("Erro inesperado. Por favor, tente novamente.");
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks(currentPage);
+  }, [currentPage]);
 
   const handleTaskCompletion = async (id: number, concluido: boolean) => {
     try {
@@ -124,39 +130,37 @@ const Tasks: React.FC = () => {
     }
 
     try {
-      // Buscar informações do usuário e das tarefas
       const userResponse = await axios.get("http://localhost:5000/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const tasksResponse = await axios.get("http://localhost:5000/tasks", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Chamar a API para obter todas as tarefas, sem paginação
+      const allTasksResponse = await axios.get(
+        "http://localhost:5000/tasks/all",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       const { nome } = userResponse.data;
-      const tasks = tasksResponse.data;
+      const allTasks = allTasksResponse.data.tarefas; // Receber todas as tarefas
 
       const doc = new jsPDF();
 
-      // Título do PDF com o nome do usuário
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(20);
       doc.setTextColor("#007bff");
-      doc.text(nome, 10, 20); // Posição: 10mm da esquerda, 20mm do topo
+      doc.text(nome, 10, 20);
 
-      // Iniciar listagem das tarefas
       doc.setFontSize(14);
       doc.setFont("Helvetica", "normal");
 
-      let yPosition = 40; // Posição inicial da primeira tarefa
+      let yPosition = 40;
 
-      tasks.forEach((task: Task) => {
-        // Título da tarefa
+      allTasks.forEach((task: Task) => {
         doc.setTextColor("#283d50");
         doc.text(task.titulo, 10, yPosition);
         yPosition += 10;
-
-        // Status da tarefa
         if (task.concluido) {
           doc.setTextColor("green");
           doc.text("Concluída", 10, yPosition);
@@ -166,19 +170,16 @@ const Tasks: React.FC = () => {
         }
         yPosition += 10;
 
-        // Descrição da tarefa
         doc.setTextColor("#525c69");
         doc.text(doc.splitTextToSize(task.descricao, 180), 10, yPosition);
-        yPosition += 20; // Espaço adicional entre as tarefas
+        yPosition += 20;
 
-        // Verifica se está perto do final da página
         if (yPosition > 270) {
           doc.addPage();
-          yPosition = 20; // Reinicia a posição y para a nova página
+          yPosition = 20;
         }
       });
 
-      // Salvar o PDF
       doc.save("Minhas_Tarefas.pdf");
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
@@ -188,7 +189,7 @@ const Tasks: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#ecf5ff]">
-      <div className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
+      <div className="bg-white shadow-lg rounded-lg p-6 max-w-md w-full mt-8 mb-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-[#283d50]">Minhas Tarefas</h2>
           <button
@@ -226,7 +227,7 @@ const Tasks: React.FC = () => {
                     type="checkbox"
                     checked={task.concluido}
                     onChange={(e) => {
-                      e.stopPropagation(); // Impede que o clique no checkbox redirecione
+                      e.stopPropagation();
                       handleTaskCompletion(task.id, task.concluido);
                     }}
                     className="form-checkbox h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-0 focus:outline-none mr-4"
@@ -254,6 +255,27 @@ const Tasks: React.FC = () => {
             ))}
           </div>
         )}
+
+        <div className="flex justify-between mt-6">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((prev) => prev - 1)}
+            className={`px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 ${
+              currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            Anterior
+          </button>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
+            className={`px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 ${
+              currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            Próximo
+          </button>
+        </div>
       </div>
 
       <Modal
