@@ -39,8 +39,8 @@ Antes de rodar o projeto, certifique-se de ter instalado:
 ### Clonar o repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/gerenciamento_tarefas.git
-cd nome-do-repositorio
+git clone https://github.com/Gabrieel-Santos/gerenciamento_tarefass
+cd gerenciamento_tarefas
 ```
 
 ### Instalar dependências:
