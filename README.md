@@ -39,7 +39,7 @@ Antes de rodar o projeto, certifique-se de ter instalado:
 ### Clonar o repositório:
 
 ```bash
-git clone https://github.com/Gabrieel-Santos/gerenciamento_tarefass
+git clone https://github.com/Gabrieel-Santos/gerenciamento_tarefas
 cd gerenciamento_tarefas
 ```
 
