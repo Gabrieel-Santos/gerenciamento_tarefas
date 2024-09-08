@@ -15,6 +15,7 @@ const Login: React.FC = () => {
     e.preventDefault();
 
     try {
+      // Faz uma requisição POST para o endpoint de login
       const response = await axios.post("http://localhost:5000/login", {
         email,
         senha,
@@ -22,10 +23,11 @@ const Login: React.FC = () => {
 
       const { token } = response.data;
 
+      // Armazena o token no localStorage
       localStorage.setItem("token", token);
-
       navigate("/tasks");
     } catch (error: unknown) {
+      // Verifica se o erro é do Axios e exibe a mensagem apropriada
       if (axios.isAxiosError(error)) {
         setError(error.response?.data.message || "Erro ao fazer login.");
       } else {
@@ -34,6 +36,7 @@ const Login: React.FC = () => {
     }
   };
 
+  // Alterna a visibilidade da senha
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -44,7 +47,6 @@ const Login: React.FC = () => {
         <div className="text-center mb-6">
           <img src="./logo.png" alt="Logo" className="mx-auto h-12 w-auto" />
         </div>
-
         <form onSubmit={handleSubmit}>
           <div className="mb-4 relative">
             <input
@@ -57,7 +59,6 @@ const Login: React.FC = () => {
               className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-[#007bff] hover:border-[#007bff] placeholder-[#a0aec0]"
             />
           </div>
-
           <div className="mb-4 relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -71,7 +72,9 @@ const Login: React.FC = () => {
             <div
               className="absolute right-3 top-3 text-[#a0aec0] cursor-pointer"
               onClick={togglePasswordVisibility}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} // Acessibilidade
             >
+              {/* Alterna entre o ícone de olho aberto e fechado */}
               {showPassword ? (
                 <FontAwesomeIcon icon={faEyeSlash} />
               ) : (
@@ -80,8 +83,8 @@ const Login: React.FC = () => {
             </div>
           </div>
 
+          {/* Exibe uma mensagem de erro se houver */}
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
           <button
             type="submit"
             className="w-full p-3 rounded-lg text-white transition-colors bg-[#007bff] hover:bg-[#0056b3]"
@@ -89,7 +92,6 @@ const Login: React.FC = () => {
             ENTRAR
           </button>
         </form>
-
         <div className="mt-6 text-center">
           <p className="text-[#a0aec0]">
             Não tem uma conta?{" "}

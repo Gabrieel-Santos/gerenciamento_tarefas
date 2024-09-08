@@ -12,9 +12,9 @@ interface Task {
 const TaskDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [task, setTask] = useState<Task | null>(null);
-  const [titulo, setTitulo] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [error, setError] = useState("");
+  const [titulo, setTitulo] = useState<string>("");
+  const [descricao, setDescricao] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +26,7 @@ const TaskDetail: React.FC = () => {
           return;
         }
 
+        // Requisição para obter os dados da tarefa pelo ID
         const response = await axios.get(`http://localhost:5000/tasks/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -42,7 +43,7 @@ const TaskDetail: React.FC = () => {
       }
     };
 
-    fetchTask();
+    fetchTask(); // Chama a função ao montar o componente
   }, [id]);
 
   const handleUpdateTask = async (e: React.FormEvent) => {
@@ -55,6 +56,7 @@ const TaskDetail: React.FC = () => {
         return;
       }
 
+      // Requisição para atualizar a tarefa
       await axios.patch(
         `http://localhost:5000/tasks/${id}`,
         { titulo, descricao },
@@ -71,10 +73,12 @@ const TaskDetail: React.FC = () => {
     }
   };
 
+  // Exibe uma mensagem de erro, se houver
   if (error) {
     return <p className="text-red-500 text-center">{error}</p>;
   }
 
+  // Exibe uma mensagem de carregamento enquanto a tarefa é obtida
   if (!task) {
     return <p className="text-center">Carregando...</p>;
   }

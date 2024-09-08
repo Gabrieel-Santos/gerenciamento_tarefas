@@ -5,7 +5,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faFilePdf } from "@fortawesome/free-solid-svg-icons";
 import Modal from "react-modal";
 import jsPDF from "jspdf";
-
 interface Task {
   id: number;
   titulo: string;
@@ -13,6 +12,7 @@ interface Task {
   concluido: boolean;
 }
 
+// Define o elemento root para a Modal
 Modal.setAppElement("#root");
 
 const Tasks: React.FC = () => {
@@ -22,6 +22,7 @@ const Tasks: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
   const navigate = useNavigate();
 
   const fetchTasks = async (page: number) => {
@@ -32,6 +33,7 @@ const Tasks: React.FC = () => {
         return;
       }
 
+      // Faz a requisição GET com paginação
       const response = await axios.get("http://localhost:5000/tasks", {
         params: { page },
         headers: { Authorization: `Bearer ${token}` },
@@ -41,6 +43,7 @@ const Tasks: React.FC = () => {
       setTotalPages(response.data.totalPages);
       setCurrentPage(response.data.currentPage);
     } catch (error: unknown) {
+      // Tratamento de erro para requisição
       if (axios.isAxiosError(error)) {
         setError(error.response?.data.message || "Erro ao listar tarefas.");
       } else {
@@ -49,6 +52,7 @@ const Tasks: React.FC = () => {
     }
   };
 
+  // Carrega as tarefas ao montar o componente e quando a página muda
   useEffect(() => {
     fetchTasks(currentPage);
   }, [currentPage]);
@@ -61,12 +65,14 @@ const Tasks: React.FC = () => {
         return;
       }
 
+      // Faz a requisição PATCH para atualizar o status de conclusão da tarefa
       await axios.patch(
         `http://localhost:5000/tasks/${id}`,
         { concluido: !concluido },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      // Atualiza o estado das tarefas localmente
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task.id === id ? { ...task, concluido: !concluido } : task
@@ -81,6 +87,7 @@ const Tasks: React.FC = () => {
     }
   };
 
+  // Função para navegar para a página de detalhes da tarefa, evitando que o clique em checkbox ou ícone de exclusão também navegue
   const handleTaskClick = (e: React.MouseEvent, taskId: number) => {
     const target = e.target as HTMLElement;
     if (target.tagName !== "INPUT" && !target.closest(".delete-icon")) {
@@ -88,6 +95,7 @@ const Tasks: React.FC = () => {
     }
   };
 
+  // Função para abrir a modal de confirmação de exclusão
   const handleDeleteClick = (task: Task) => {
     setTaskToDelete(task);
     setShowModal(true);
@@ -103,10 +111,12 @@ const Tasks: React.FC = () => {
         return;
       }
 
+      // Faz a requisição DELETE para remover a tarefa
       await axios.delete(`http://localhost:5000/tasks/${taskToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      // Atualiza a lista de tarefas removendo a tarefa deletada
       setTasks((prevTasks) =>
         prevTasks.filter((task) => task.id !== taskToDelete.id)
       );
@@ -130,11 +140,12 @@ const Tasks: React.FC = () => {
     }
 
     try {
+      // Requisição para obter o perfil do usuário
       const userResponse = await axios.get("http://localhost:5000/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Chamar a API para obter todas as tarefas, sem paginação
+      // Requisição para obter todas as tarefas sem paginação
       const allTasksResponse = await axios.get(
         "http://localhost:5000/tasks/all",
         {
@@ -143,8 +154,9 @@ const Tasks: React.FC = () => {
       );
 
       const { nome } = userResponse.data;
-      const allTasks = allTasksResponse.data.tarefas; // Receber todas as tarefas
+      const allTasks = allTasksResponse.data.tarefas;
 
+      // Gera o PDF usando jsPDF
       const doc = new jsPDF();
 
       doc.setFont("Helvetica", "bold");
@@ -200,10 +212,12 @@ const Tasks: React.FC = () => {
           </button>
         </div>
 
+        {/* Exibe uma mensagem de erro se houver */}
         {error && (
           <p className="text-red-500 text-center mb-4 font-bold">{error}</p>
         )}
 
+        {/* Exibe uma mensagem se não houver tarefas */}
         {tasks.length === 0 ? (
           <p className="text-center text-gray-500">
             Você ainda não tem tarefas. Para começar clique{" "}
@@ -256,6 +270,7 @@ const Tasks: React.FC = () => {
           </div>
         )}
 
+        {/* Controle de paginação */}
         <div className="flex justify-between mt-6">
           <button
             disabled={currentPage === 1}
@@ -278,6 +293,7 @@ const Tasks: React.FC = () => {
         </div>
       </div>
 
+      {/* Modal para confirmação de exclusão */}
       <Modal
         isOpen={showModal}
         onRequestClose={() => setShowModal(false)}

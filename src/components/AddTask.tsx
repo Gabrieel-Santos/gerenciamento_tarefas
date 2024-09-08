@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+interface TaskInput {
+  titulo: string;
+  descricao: string;
+}
+
 const AddTask: React.FC = () => {
-  const [titulo, setTitulo] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [error, setError] = useState("");
+  const [titulo, setTitulo] = useState<TaskInput["titulo"]>("");
+  const [descricao, setDescricao] = useState<TaskInput["descricao"]>("");
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
 
+  // Função para enviar o formulário de adição de tarefa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -18,6 +24,7 @@ const AddTask: React.FC = () => {
         return;
       }
 
+      // Requisição para adicionar uma nova tarefa
       const response = await axios.post(
         "http://localhost:5000/tasks",
         { titulo, descricao },
@@ -25,9 +32,13 @@ const AddTask: React.FC = () => {
       );
 
       if (response.status === 201) {
+        // Limpa os campos do formulário após o sucesso
+        setTitulo("");
+        setDescricao("");
         navigate("/tasks");
       }
     } catch (error: unknown) {
+      // Verifica se o erro vem da API do Axios
       if (axios.isAxiosError(error)) {
         setError(error.response?.data.message || "Erro ao adicionar tarefa.");
       } else {
@@ -42,7 +53,6 @@ const AddTask: React.FC = () => {
         <h2 className="text-2xl font-bold text-center text-[#283d50]">
           Adicionar Tarefa
         </h2>
-
         <form onSubmit={handleSubmit}>
           <div className="mb-4 relative">
             <input
@@ -55,7 +65,6 @@ const AddTask: React.FC = () => {
               className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-[#007bff] hover:border-[#007bff] placeholder-[#a0aec0]"
             />
           </div>
-
           <div className="mb-4 relative">
             <textarea
               id="descricao"
@@ -67,10 +76,10 @@ const AddTask: React.FC = () => {
             />
           </div>
 
+          {/* Exibe mensagem de erro, se houver */}
           {error && (
             <p className="text-red-500 text-center mb-4 font-bold">{error}</p>
           )}
-
           <button
             type="submit"
             className="w-full p-3 rounded-lg text-white transition-colors bg-[#007bff] hover:bg-[#0056b3]"

@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+interface UserProfile {
+  nome: string;
+  email: string;
+  senha?: string;
+}
 
 const Profile: React.FC = () => {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [nome, setNome] = useState<UserProfile["nome"]>("");
+  const [email, setEmail] = useState<UserProfile["email"]>("");
+  const [senha, setSenha] = useState<UserProfile["senha"]>("");
+  const [confirmarSenha, setConfirmarSenha] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useState<string>("");
 
+  const navigate = useNavigate();
+
+  // Fetch de dados do perfil ao carregar o componente
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -22,6 +30,7 @@ const Profile: React.FC = () => {
           return;
         }
 
+        // Requisição para obter os dados do perfil
         const response = await axios.get("http://localhost:5000/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -38,12 +47,13 @@ const Profile: React.FC = () => {
       }
     };
 
-    fetchProfile();
+    fetchProfile(); // Chama a função para buscar o perfil
   }, []);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Verifica se as senhas coincidem
     if (senha && senha !== confirmarSenha) {
       setError("As senhas não coincidem.");
       return;
@@ -56,15 +66,14 @@ const Profile: React.FC = () => {
         return;
       }
 
+      // Requisição para atualizar os dados do perfil
       await axios.patch(
         "http://localhost:5000/profile",
         { nome, email, senha },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setSuccess("Perfil atualizado com sucesso!");
-      setSenha("");
-      setConfirmarSenha("");
+      navigate("/tasks");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         setError(error.response?.data.message || "Erro ao atualizar perfil.");
@@ -123,6 +132,7 @@ const Profile: React.FC = () => {
             <div
               className="absolute right-3 top-3 text-[#a0aec0] cursor-pointer"
               onClick={togglePasswordVisibility}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} // Acessibilidade
             >
               {showPassword ? (
                 <FontAwesomeIcon icon={faEyeSlash} />
@@ -143,6 +153,11 @@ const Profile: React.FC = () => {
             <div
               className="absolute right-3 top-3 text-[#a0aec0] cursor-pointer"
               onClick={toggleConfirmPasswordVisibility}
+              aria-label={
+                showConfirmPassword
+                  ? "Ocultar confirmação de senha"
+                  : "Mostrar confirmação de senha"
+              } // Acessibilidade
             >
               {showConfirmPassword ? (
                 <FontAwesomeIcon icon={faEyeSlash} />
@@ -151,13 +166,10 @@ const Profile: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Exibe mensagem de erro se houver */}
           {error && (
             <p className="text-red-500 text-center mb-4 font-bold">{error}</p>
-          )}
-          {success && (
-            <p className="text-green-500 text-center mb-4 font-bold">
-              {success}
-            </p>
           )}
           <button
             type="submit"

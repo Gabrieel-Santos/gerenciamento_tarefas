@@ -4,25 +4,35 @@ import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
-const Registrar: React.FC = () => {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [confirmarSenha, setConfirmarSenha] = useState("");
+interface RegisterInput {
+  nome: string;
+  email: string;
+  senha: string;
+  confirmarSenha: string;
+}
+
+const Register: React.FC = () => {
+  const [nome, setNome] = useState<RegisterInput["nome"]>("");
+  const [email, setEmail] = useState<RegisterInput["email"]>("");
+  const [senha, setSenha] = useState<RegisterInput["senha"]>("");
+  const [confirmarSenha, setConfirmarSenha] =
+    useState<RegisterInput["confirmarSenha"]>("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Verifica se as senhas coincidem
     if (senha !== confirmarSenha) {
       setError("As senhas não coincidem.");
       return;
     }
 
     try {
+      // Faz a requisição para o endpoint de registro
       const response = await axios.post("http://localhost:5000/register", {
         nome,
         email,
@@ -33,6 +43,7 @@ const Registrar: React.FC = () => {
         navigate("/");
       }
     } catch (error: unknown) {
+      // Verifica se o erro é do Axios e exibe a mensagem apropriada
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 409) {
           setError("Email já cadastrado.");
@@ -70,7 +81,6 @@ const Registrar: React.FC = () => {
               className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-[#007bff] hover:border-[#007bff] placeholder-[#a0aec0]"
             />
           </div>
-
           <div className="mb-4 relative">
             <input
               type="email"
@@ -82,7 +92,6 @@ const Registrar: React.FC = () => {
               className="w-full p-3 border-b border-gray-300 focus:outline-none focus:border-[#007bff] hover:border-[#007bff] placeholder-[#a0aec0]"
             />
           </div>
-
           <div className="mb-4 relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -96,6 +105,7 @@ const Registrar: React.FC = () => {
             <div
               className="absolute right-3 top-3 text-[#a0aec0] cursor-pointer"
               onClick={togglePasswordVisibility}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} // Acessibilidade
             >
               {showPassword ? (
                 <FontAwesomeIcon icon={faEyeSlash} />
@@ -104,7 +114,6 @@ const Registrar: React.FC = () => {
               )}
             </div>
           </div>
-
           <div className="mb-4 relative">
             <input
               type={showConfirmPassword ? "text" : "password"}
@@ -118,6 +127,11 @@ const Registrar: React.FC = () => {
             <div
               className="absolute right-3 top-3 text-[#a0aec0] cursor-pointer"
               onClick={toggleConfirmPasswordVisibility}
+              aria-label={
+                showConfirmPassword
+                  ? "Ocultar confirmação de senha"
+                  : "Mostrar confirmação de senha"
+              } // Acessibilidade
             >
               {showConfirmPassword ? (
                 <FontAwesomeIcon icon={faEyeSlash} />
@@ -127,8 +141,8 @@ const Registrar: React.FC = () => {
             </div>
           </div>
 
+          {/* Exibe uma mensagem de erro se houver */}
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
           <button
             type="submit"
             className="w-full p-3 rounded-lg text-white transition-colors bg-[#007bff] hover:bg-[#0056b3]"
@@ -136,7 +150,6 @@ const Registrar: React.FC = () => {
             REGISTRAR
           </button>
         </form>
-
         <div className="mt-6 text-center">
           <p className="text-[#a0aec0]">
             Já tem uma conta?{" "}
@@ -153,4 +166,4 @@ const Registrar: React.FC = () => {
   );
 };
 
-export default Registrar;
+export default Register;

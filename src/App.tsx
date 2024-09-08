@@ -7,7 +7,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import Login from "./components/Login";
-import Registrar from "./components/Registrar";
+import Registrar from "./components/Register";
 import AddTask from "./components/AddTask";
 import Tasks from "./components/Tasks";
 import TaskDetail from "./components/TaskDetail";
@@ -22,12 +22,14 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Registrar />} />
+
+        {/* Rotas protegidas, acessíveis apenas por usuários autenticados */}
         <Route element={<ProtectedRoute />}>
           <Route
             element={
               <>
                 <Navbar />
-                <Outlet />
+                <Outlet /> {/* Outlet para renderizar os componentes filhos */}
                 <Footer />
               </>
             }
@@ -38,6 +40,8 @@ const App: React.FC = () => {
             <Route path="/tasks/:id" element={<TaskDetail />} />
           </Route>
         </Route>
+
+        {/* Redireciona qualquer rota inválida para "/tasks" */}
         <Route path="*" element={<Navigate to="/tasks" />} />
       </Routes>
     </Router>

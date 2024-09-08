@@ -53,7 +53,7 @@ export const getTasks = async (req, res) => {
   }
 };
 
-// Listagem de todas as tarefas sem paginação
+// Listagem de todas as tarefas para baixar o PDF
 export const getAllTasks = async (req, res) => {
   try {
     const tarefas = await prisma.tarefa.findMany({
